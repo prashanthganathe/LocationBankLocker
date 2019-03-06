@@ -1,0 +1,173 @@
+﻿
+@model IEnumerable<LocationModel>
+
+<style>
+    {
+        box-sizing: border-box;
+    }
+
+    table {
+        border-spacing: 0;
+        border-collapse: collapse;
+    }
+
+    tr:nth-child(even) {
+        cursor: pointer;
+    }
+
+    tr:first-child {
+        background: silver;
+    }
+
+    tr:nth-child(4n+4) td {
+        background: #ccc;
+    }
+
+    td {
+        border: 1px solid #3E3E3E;
+        padding: 5px;
+    }
+
+    .expandable div {
+        transition: height, padding .3s ease;
+        padding: 0 10px;
+    }
+
+    .expandable:not(.expand) td {
+        padding: 0;
+        border-bottom-color: transparent;
+    }
+
+    .expandable:not(.expand) div {
+        height: 0;
+        overflow: hidden;
+    }
+
+    .expandable.expand div {
+        padding: 10px;
+    }
+</style>
+
+
+@{
+    ViewData["Title"] = "Locations";
+}
+<h2>@ViewData["Title"]</h2>
+
+
+
+
+
+<table class="table" id="tableid" style="width:200px;">
+    <thead>
+        <tr>
+            <th>
+                @Html.DisplayNameFor(model => model.Name)
+            </th>
+
+          
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model)
+        {
+            <tr>
+                <td class="locations" id=@item.Id>
+                    @Html.DisplayFor(modelItem => item.Name)
+                </td>
+      
+               
+            </tr>
+        }
+    </tbody>
+</table>
+
+<script type="text/javascript">
+
+    $(document).ready(function () {
+
+
+        //var result = [
+        //    { product: 'ESB', Day01: 'yes', Day02: 'yes', Day03: 'yes', Day04: 'yes', Day05: 'yes', Day06: 'yes', Day07: 'yes', WeeklyWeather: 'rain', MonthlyWeather: 'rain' }, { product: 'ML', Day01: 'yes', Day02: 'yes', Day03: 'yes', Day04: 'yes', Day05: 'yes', Day06: 'yes', Day07: 'yes', WeeklyWeather: 'rain', MonthlyWeather: 'rain' }, { product: 'ML', Day01: 'yes', Day02: 'yes', Day03: 'yes', Day04: 'yes', Day05: 'yes', Day06: 'yes', Day07: 'yes', WeeklyWeather: 'rain', MonthlyWeather: 'rain' }
+        //];
+
+        //$("#tableid").append("<tr><td> Product </td> <td >12/09</td> <td>13/09</td> <td>14/09</td><td>15/09</td><td>16/09</td><td>17/09</td><td> Current </td><td> Weekly </td><td> Monthly </td></tr>");
+        //for (var i = 0; i < result.length; i++) {
+        //    $("#tableid").append("<tr><td>" + result[i].product + "</td><td><img src='images/" + result[i].Day01 + ".png' /></td><td><img src='images/" + result[i].Day02 + ".png' /><td><img src='images/" + result[i].Day03 + ".png' /></td><td><img src='images/" + result[i].Day04 + ".png' /></td><td><img src='images/" + result[i].Day05 + ".png' /></td><td><img src='images/" + result[i].Day06 + ".png' /></td><td><img src='images/" + result[i].Day07 + ".png' /></td><td><img src='images/" + result[i].WeeklyWeather + ".png' /></td><td><img src='images/" + result[i].MonthlyWeather + ".png' /></td></tr><tr class='expandable'><td colspan='10'><div>Expanded content</div></td></tr>");
+        //}
+
+        function ShowBankInfo(parentDomobject,locationid,banks)
+        {
+            //alert(banks);
+            if (banks.length > 0) {
+                parentDomobject.find('table').html('');
+                var childtable = '<table class="banktable"><thead><tr><th>Banks<th></thead><tbody>';
+                $.each(banks, function (index, value) {                    
+                    childtable+=('<tr><td>'+value.name+'</td></tr>');
+                });
+                childtable += '</tbody></table>';
+
+                parentDomobject.append(childtable);
+            }
+
+        }
+
+        function ShowLockerInfo(parentDomobject, locationid, banks) {
+            //alert(banks);
+            if (banks.length > 0) {
+                parentDomobject.find('table').html('');
+                var childtable = '<table class="lockertable"><thead><tr><th>Lockers<th></thead><tbody>';
+                $.each(banks, function (index, value) {
+                    childtable += ('<tr><td>' + value.name + '</td></tr>');
+                });
+                childtable += '</tbody></table>';
+
+                parentDomobject.append(childtable);
+            }
+
+        }
+
+        function GetBanks(parentDomobject,locationid)
+        {   
+            var locationid = parentDomobject.find('td')[0].id;
+            $.ajax
+                ({
+                    type: "GET",
+                    url: "../api/LocationBankAPI/" + locationid,                  
+                    success: function (data) {
+                        ShowBankInfo(parentDomobject,locationid,data);
+                    }
+                });
+        }
+
+        function GetLockers(parentDomobject, bankid) {
+            var locationid = parentDomobject.find('td')[0].id;
+            $.ajax
+                ({
+                    type: "GET",
+                    url: "../api/LockerAPI/" + bankid,
+                    success: function (data) {
+                        ShowLockerInfo(parentDomobject, bankid, data);
+                    }
+                });
+        }
+
+        $('#tableid').on('click', 'tr:nth-child(even)', function () {
+          // $(this).next().toggleClass('expand');
+            if ($(this).find('.locations').length)
+            {
+                GetBanks($(this));
+
+            }
+        });
+
+        $('.banktable').on('click', 'tr:nth-child(even)', function () {
+            // $(this).next().toggleClass('expand');
+            if ($(this).find('.lockers').length) {
+                GetLockers($(this));
+            }
+        });
+
+    });
+</script>
+
